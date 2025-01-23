@@ -41,11 +41,12 @@ const workfolderControllers = {
       const foldersWithTodo = await Promise.all(
         folders.map(async (folder) => {
           const todos = await Todo.find({ workfolderId: folder._id })
-            .select("title status deadline checklists assignments order")
+            .select("title note status deadline checklists assignments order")
             .populate({
               path: "assignments.userId",
               select: "name",
             })
+            .sort({ order: -1 })
             .exec();
 
           return {

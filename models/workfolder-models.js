@@ -5,8 +5,6 @@ const workfolderSchema = new Schema(
   {
     title: {
       type: String,
-      required: true,
-      minlength: 3,
       maxlength: 50,
     },
     workspaceId: {

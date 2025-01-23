@@ -253,7 +253,7 @@ const todoControllers = {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const timestamp = today.getTime();
-      if (timestamp < deadline) {
+      if (deadline < timestamp) {
         return res.status(400).json({
           success: false,
           message: "Deadline不能小於今日",
