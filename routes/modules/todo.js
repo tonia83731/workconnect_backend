@@ -9,12 +9,12 @@ router.delete(
   workspaceAuthenticated,
   todoControllers.deleteTodo
 );
-// V
 router.get(
-  "/:workspaceId/:todoId",
-  workspaceAuthenticated,
-  todoControllers.getTodo
+  "/:workfolderId/bucket-todos",
+  // workspaceAuthenticated,
+  todoControllers.getTodos
 );
+
 // V
 router.put(
   "/:workspaceId/:todoId/update-todo",
@@ -29,9 +29,14 @@ router.put(
 );
 // V
 router.post(
-  "/:workspaceId/:workfolderId/create-todo",
-  workspaceAuthenticated,
+  "/:workfolderId/create-todo",
+  // workspaceAuthenticated,
   todoControllers.createTodo
+);
+router.get(
+  "/:todoId/todo-item",
+  // workspaceAuthenticated,
+  todoControllers.getTodo
 );
 
 module.exports = router;

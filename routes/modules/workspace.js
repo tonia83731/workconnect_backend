@@ -6,23 +6,27 @@ const workspaceControllers = require("../../controllers/workspace-controllers");
 
 // NON
 router.delete(
-  "/:workspaceId/:memberId/remove-member",
-  workspaceAuthenticated,
+  "/:workspaceAccount/:memberId/remove-member",
+  // workspaceAuthenticated,
   workspaceControllers.removeWorkspaceMember
 );
 
 // V
 router.post(
-  "/:workspaceId/:memberId/admin/add-admin",
-  workspaceAuthenticated,
+  "/:workspaceAccount/:memberId/admin/add-admin",
+  // workspaceAuthenticated,
   workspaceControllers.setWorkspaceMemberAsAdmin
 );
 
 // V
 router.delete(
-  "/:workspaceId/:memberId/admin/remove-admin",
-  workspaceAuthenticated,
+  "/:workspaceAccount/:memberId/admin/remove-admin",
+  // workspaceAuthenticated,
   workspaceControllers.removeWorkspaceMemberAsAdmin
+);
+router.get(
+  "/:workspaceAccount/checked-worksapce-auth",
+  workspaceControllers.checkedWorkspaceAuthentication
 );
 // V
 router.put(
@@ -38,15 +42,21 @@ router.put(
 // );
 // V
 router.get(
-  "/:workspaceId/members",
-  workspaceAuthenticated,
+  "/:workspaceAccount/members",
+  // workspaceAuthenticated,
   workspaceControllers.getWorkspaceMemberlists
 );
 // V
-router.post(
-  "/:workspaceId/invite-member",
-  workspaceAuthenticated,
+router.put(
+  "/:workspaceAccount/invite-member",
+  // workspaceAuthenticated,
   workspaceControllers.invitedWorkspaceMember
+);
+
+router.put(
+  "/:workspaceAccount/cancel-invite",
+  // workspaceAuthenticated,
+  workspaceControllers.canceledInvitedWorkspaceMember
 );
 
 module.exports = router;

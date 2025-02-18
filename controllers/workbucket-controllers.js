@@ -1,37 +1,67 @@
+const Workspace = require("../models/workspace-models");
 const Workbucket = require("../models/workbucket-models");
 const Workfolder = require("../models/workfolder-models");
 const Todo = require("../models/todo-models");
 const { default: mongoose } = require("mongoose");
 
 const workbucketControllers = {
+  updatePinnedBucket: async (req, res) => {
+    try {
+      const { bucketId } = req.params;
+
+      const bucket = await Workbucket.findById(bucketId);
+
+      bucket.isPinned = !bucket.isPinned;
+
+      const data = await bucket.save();
+      return res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  unpinnedBucket: async (req, res) => {
+    try {
+      const { bucketId } = req.params;
+
+      const bucket = await Workbucket.findById(bucketId);
+      if (!bucket)
+        return res.status(404).json({
+          success: false,
+          message: "工作Bucket不存在",
+        });
+      if (!bucket.isPinned)
+        return res.status(200).json({
+          success: false,
+          message: "工作Bucket已取消釘選",
+        });
+      bucket.isPinned = false;
+
+      const data = await bucket.save();
+      return res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
   updatedWorkspaceBucket: async (req, res) => {
     try {
-      const { workspaceId, bucketId } = req.params;
-      const { title, isPinned } = req.body;
+      const { bucketId } = req.params;
+      const { title } = req.body;
 
       const bucket = await Workbucket.findById(bucketId);
 
       if (!bucket)
         return res.status(404).json({
           success: false,
-          message: "工作區群組不存在",
+          message: "工作Bucket不存在",
         });
-
-      if (isPinned) {
-        const otherPinnedBucket = await Workbucket.findOne({
-          workspaceId,
-          isPinned: true,
-          _id: { $ne: bucketId },
-        });
-
-        if (otherPinnedBucket) {
-          otherPinnedBucket.isPinned = false;
-          await otherPinnedBucket.save();
-        }
-      }
 
       bucket.title = title || bucket.title;
-      bucket.isPinned = isPinned || bucket.isPinned;
 
       const data = await bucket.save();
 
@@ -69,40 +99,61 @@ const workbucketControllers = {
       console.log(error);
     }
   },
+  // V
   getWorkspaceBuckets: async (req, res) => {
     try {
-      const { workspaceId } = req.params;
+      const { workspaceAccount } = req.params;
+
+      const workspace = await Workspace.findOne({
+        account: workspaceAccount,
+      });
+      const workspaceId = workspace._id;
+
       const workbuckets = await Workbucket.find({ workspaceId })
         .sort({
           isPinned: -1,
         })
         .exec();
 
-      const buckets = await Promise.all(
-        workbuckets.map(async (bucket) => {
-          const folderCount = await Workfolder.countDocuments({
-            workspaceId,
-            workbucketId: bucket._id,
-          });
-          return {
-            ...bucket.toObject(),
-            folderCount,
-          };
-        })
-      );
+      // console.log(workbuckets);
 
       return res.status(200).json({
         success: true,
-        data: buckets,
+        data: workbuckets,
       });
     } catch (error) {
       console.log(error);
     }
   },
+  getWorkspaceBucket: async (req, res) => {
+    try {
+      const { bucketId } = req.params;
+      const bucket = await Workbucket.findById(bucketId);
+
+      if (!bucket)
+        return res.status(404).json({
+          success: false,
+          message: "工作區群組不存在",
+        });
+
+      return res.status(200).json({
+        success: true,
+        data: bucket.title,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  // V
   createdWorkspaceBucket: async (req, res) => {
     try {
-      const { workspaceId } = req.params;
+      const { workspaceAccount } = req.params;
       const { title } = req.body;
+
+      const workspace = await Workspace.findOne({
+        account: workspaceAccount,
+      });
+      const workspaceId = workspace._id;
 
       const bucket = await Workbucket.create({
         workspaceId: new mongoose.Types.ObjectId(workspaceId),

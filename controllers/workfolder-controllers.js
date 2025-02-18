@@ -1,12 +1,13 @@
+const Workspace = require("../models/workspace-models");
 const Workfolder = require("../models/workfolder-models");
 const Todo = require("../models/todo-models");
 
 const workfolderControllers = {
   getWorkfolders: async (req, res) => {
     try {
-      const { workspaceId, workbucketId } = req.params;
+      const { workbucketId } = req.params;
+
       const folders = await Workfolder.find({
-        workspaceId,
         workbucketId,
       }).exec();
 
@@ -26,9 +27,8 @@ const workfolderControllers = {
   },
   getWorkfoldersWithTodo: async (req, res) => {
     try {
-      const { workspaceId, workbucketId } = req.params;
+      const { workbucketId } = req.params;
       const folders = await Workfolder.find({
-        workspaceId,
         workbucketId,
       }).exec();
 
@@ -184,7 +184,7 @@ const workfolderControllers = {
   // add order
   deleteWorkfolder: async (req, res) => {
     try {
-      const { workspaceId, folderId } = req.params;
+      const { folderId } = req.params;
       const folder = await Workfolder.findById(folderId);
 
       if (!folder)
@@ -194,7 +194,7 @@ const workfolderControllers = {
         });
 
       const workfolders = await Workfolder.find({
-        workspaceId,
+        // workspaceId,
         workbucketId: folder.workbucketId,
       }).sort({ order: 1 });
 
@@ -223,16 +223,20 @@ const workfolderControllers = {
   },
   createdWorkfolder: async (req, res) => {
     try {
-      const { workspaceId } = req.params;
-      const { workbucketId, title } = req.body;
+      const { workspaceAccount, workbucketId } = req.params;
+      // const { title } = req.body;
+
+      const workspace = await Workspace.findOne({
+        account: workspaceAccount,
+      });
       const orderCount = await Workfolder.countDocuments({
-        workspaceId,
+        // workspaceId,
         workbucketId,
       }).exec();
 
       const folder = await Workfolder.create({
-        title,
-        workspaceId,
+        title: `新增資料夾${orderCount}`,
+        workspaceId: workspace._id,
         workbucketId,
         order: orderCount,
       });

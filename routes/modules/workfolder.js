@@ -3,41 +3,29 @@ const router = express.Router();
 const { workspaceAuthenticated } = require("../../middleware/api-auth");
 const workfolderControllers = require("../../controllers/workfolder-controllers");
 
-//V
-router.get(
-  "/:workspaceId/:workbucketId/folders",
-  workspaceAuthenticated,
-  workfolderControllers.getWorkfolders
+router.post(
+  "/:workspaceAccount/:workbucketId/create-folder",
+  // workspaceAuthenticated,
+  workfolderControllers.createdWorkfolder
 );
-// V
-router.get(
-  "/:workspaceId/:workbucketId/folders-and-todos",
-  workspaceAuthenticated,
-  workfolderControllers.getWorkfoldersWithTodo
-);
-// V
+
 router.put(
   "/:workspaceId/:folderId/update-folder",
   workspaceAuthenticated,
   workfolderControllers.updatedWorkfolder
 );
-// V
+router.get("/:workbucketId/folders", workfolderControllers.getWorkfolders);
+router.get(
+  "/:workbucketId/folders-and-todos",
+  workfolderControllers.getWorkfoldersWithTodo
+);
 router.put(
-  "/:workspaceId/:folderId/updated-folder-title",
-  workspaceAuthenticated,
+  "/:folderId/updated-folder-title",
   workfolderControllers.updatedWorkfolderTitle
 );
-// V
 router.delete(
-  "/:workspaceId/:folderId/delete-folder",
-  workspaceAuthenticated,
+  "/:folderId/delete-folder",
   workfolderControllers.deleteWorkfolder
-);
-// V
-router.post(
-  "/:workspaceId/create-folder",
-  workspaceAuthenticated,
-  workfolderControllers.createdWorkfolder
 );
 
 module.exports = router;

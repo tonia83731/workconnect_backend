@@ -5,27 +5,37 @@ const { workspaceAuthenticated } = require("../../middleware/api-auth");
 const workbucketControllers = require("../../controllers/workbucket-controllers");
 
 // V
-router.put(
-  "/:workspaceId/:bucketId/update-bucket",
+
+router.get(
+  "/:workspaceId/:bucketId/bucket-title",
   workspaceAuthenticated,
+  workbucketControllers.getWorkspaceBucket
+);
+
+router.put(
+  "/:bucketId/update-bucket-pinned",
+  workbucketControllers.updatePinnedBucket
+);
+router.put(
+  "/:bucketId/update-bucket",
   workbucketControllers.updatedWorkspaceBucket
 );
-// V
+
 router.delete(
-  "/:workspaceId/:bucketId/delete-bucket",
-  workspaceAuthenticated,
+  "/:bucketId/delete-bucket",
   workbucketControllers.deletedWorkspaceBucket
 );
+
 // V
 router.get(
-  "/:workspaceId/buckets",
-  workspaceAuthenticated,
+  "/:workspaceAccount/buckets",
+  // workspaceAuthenticated,
   workbucketControllers.getWorkspaceBuckets
 );
 // V
 router.post(
-  "/:workspaceId/create-bucket",
-  workspaceAuthenticated,
+  "/:workspaceAccount/create-bucket",
+  // workspaceAuthenticated,
   workbucketControllers.createdWorkspaceBucket
 );
 

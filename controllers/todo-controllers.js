@@ -38,6 +38,26 @@ const todoControllers = {
       console.log(error);
     }
   },
+  getTodos: async (req, res) => {
+    try {
+      const { workfolderId } = req.params;
+      const todos = await Todo.find({
+        workfolderId,
+      })
+        .populate({
+          path: "assignments.userId",
+          select: "name",
+        })
+        .sort({ order: -1 });
+
+      return res.status(200).json({
+        success: true,
+        data: todos,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
   getTodo: async (req, res) => {
     try {
       const { todoId } = req.params;

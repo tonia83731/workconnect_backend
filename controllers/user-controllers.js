@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const { default: mongoose } = require("mongoose");
+const { nodeMailer } = require("../helpers/mail-helper");
 
 const userControllers = {
   register: async (req, res) => {
@@ -44,6 +45,15 @@ const userControllers = {
         email,
         password: hash,
       });
+
+      // const mail_text = `Thank you for registering with Workconnect! We are excited to have you on board.\nYour registration has been successfully completed. You can now access all of our services and start exploring opportunities with us.`;
+
+      // nodeMailer(
+      //   name,
+      //   email,
+      //   "Welcome to Workconnect - Your Registration is Successful",
+      //   mail_text
+      // );
 
       return res.status(201).json({
         success: true,
@@ -112,6 +122,7 @@ const userControllers = {
         data: {
           isAuth: true,
           userId: _id,
+          user,
         },
       });
     } catch (error) {
@@ -139,7 +150,7 @@ const userControllers = {
   updatedUserProfile: async (req, res) => {
     try {
       const { userId } = req.params;
-      const { name, email, password } = req.body;
+      const { name, email } = req.body;
 
       const user = await User.findById(userId);
       if (!user)
@@ -154,11 +165,11 @@ const userControllers = {
           message: "Email格式錯誤",
         });
 
-      if (password && password.length < 4)
-        return res.status(400).json({
-          success: false,
-          message: "Password需大於4碼",
-        });
+      // if (password && password.length < 4)
+      //   return res.status(400).json({
+      //     success: false,
+      //     message: "Password需大於4碼",
+      //   });
 
       const isEmailExisted = await User.findOne({ email });
       if (user.email !== email && isEmailExisted)
@@ -171,7 +182,7 @@ const userControllers = {
 
       user.name = name || user.name;
       user.email = email || user.email;
-      user.password = password || user.password;
+      // user.password = password || user.password;
 
       const data = await user.save();
 
@@ -195,8 +206,15 @@ const userControllers = {
         },
         {
           $addFields: {
-            memberCount: {
-              $size: "$members",
+            memberCount: { $size: "$members" }, // Total members count
+            adminCount: {
+              $size: {
+                $filter: {
+                  input: "$members",
+                  as: "member",
+                  cond: { $eq: ["$$member.isAdmin", true] },
+                },
+              },
             },
           },
         },
@@ -208,6 +226,7 @@ const userControllers = {
       });
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ success: false, message: "Server Error" });
     }
   },
   confirmWorkspaceInvitations: async (req, res) => {

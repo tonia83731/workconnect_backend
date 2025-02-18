@@ -24,6 +24,11 @@ router.post(
   authenticated,
   workspaceControllers.createWorkspace
 );
+router.post(
+  "/checked-workspace-account",
+  authenticated,
+  workspaceControllers.checkedAccountExisted
+);
 router.use("/", auth);
 
 module.exports = router;
