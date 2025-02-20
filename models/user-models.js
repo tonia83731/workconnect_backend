@@ -18,6 +18,14 @@ const userSchema = new Schema(
       unique: true,
       minlength: 4,
     },
+    bgColor: {
+      type: String,
+      required: true,
+    },
+    textColor: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

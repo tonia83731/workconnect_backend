@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const { default: mongoose } = require("mongoose");
 const { nodeMailer } = require("../helpers/mail-helper");
+const { getRandomColor } = require("../helpers/color-helper");
 
 const userControllers = {
   register: async (req, res) => {
@@ -44,16 +45,18 @@ const userControllers = {
         name,
         email,
         password: hash,
+        bgColor: getRandomColor(),
+        textColor: getRandomColor(),
       });
 
-      // const mail_text = `Thank you for registering with Workconnect! We are excited to have you on board.\nYour registration has been successfully completed. You can now access all of our services and start exploring opportunities with us.`;
+      const mail_text = `Thank you for registering with Workconnect! We are excited to have you on board.\nYour registration has been successfully completed. You can now access all of our services and start exploring opportunities with us.`;
 
-      // nodeMailer(
-      //   name,
-      //   email,
-      //   "Welcome to Workconnect - Your Registration is Successful",
-      //   mail_text
-      // );
+      nodeMailer(
+        name,
+        email,
+        "Welcome to Workconnect - Your Registration is Successful",
+        mail_text
+      );
 
       return res.status(201).json({
         success: true,
@@ -150,7 +153,7 @@ const userControllers = {
   updatedUserProfile: async (req, res) => {
     try {
       const { userId } = req.params;
-      const { name, email } = req.body;
+      const { name, email, bgColor, textColor } = req.body;
 
       const user = await User.findById(userId);
       if (!user)
@@ -182,6 +185,8 @@ const userControllers = {
 
       user.name = name || user.name;
       user.email = email || user.email;
+      user.bgColor = bgColor || user.bgColor;
+      user.textColor = textColor || user.textColor;
       // user.password = password || user.password;
 
       const data = await user.save();

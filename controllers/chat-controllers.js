@@ -1,11 +1,65 @@
+const Workspace = require("../models/workspace-models");
 const Chat = require("../models/chat-models");
 const Message = require("../models/message-models");
 
 const chatControllers = {
+  getChat: async (req, res) => {
+    try {
+      const { workspaceAccount } = req.params;
+
+      const workspace = await Workspace.findOne({
+        account: workspaceAccount,
+      });
+
+      if (!workspace)
+        return res.status(404).json({
+          success: false,
+          message: "工作區不存在",
+        });
+
+      const workspaceId = workspace._id;
+
+      const chat = await Chat.findOne({ workspaceId }).populate({
+        path: "lastMessage",
+        model: "Message",
+        select: "text",
+      });
+
+      if (!chat)
+        return res.stats(404).json({
+          success: false,
+          message: "討論區不存在",
+        });
+
+      return res.status(200).json({
+        success: true,
+        data: chat,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
   getChatWithMessage: async (req, res) => {
     try {
-      const { workspaceId } = req.params;
-      const chat = await Chat.findOne({ workspaceId });
+      const { workspaceAccount } = req.params;
+
+      const workspace = await Workspace.findOne({
+        account: workspaceAccount,
+      });
+
+      if (!workspace)
+        return res.status(404).json({
+          success: false,
+          message: "工作區不存在",
+        });
+
+      const workspaceId = workspace._id;
+
+      const chat = await Chat.findOne({ workspaceId }).populate({
+        path: "lastMessage",
+        model: "Message",
+        select: "text",
+      });
 
       if (!chat)
         return res.stats(404).json({
@@ -16,48 +70,84 @@ const chatControllers = {
       const messages = await Message.find({
         chatId: chat._id,
         workspaceId,
-      }).populate({
-        path: "senderId",
-        model: "User",
-        select: "_id name email",
+      })
+        .populate({
+          path: "senderId",
+          model: "User",
+          select: "_id name bgColor textColor",
+        })
+        .lean();
+
+      const formated_messages = messages.map((msg) => {
+        return {
+          ...msg,
+          senderId: msg.senderId._id,
+          name: msg.senderId.name,
+          bgColor: msg.senderId.bgColor,
+          textColor: msg.senderId.textColor,
+        };
       });
-      // console.log(chat._id, messages);
 
       return res.status(200).json({
         success: true,
-        data: { chat, messages },
+        data: { chat, messages: formated_messages },
       });
     } catch (error) {
       console.log(error);
     }
   },
-  // getChatMembers: async (req, res) => {
-  //   const { workspaceId } = req.params;
-  //   const chat = await Chat.findOne({ workspaceId }).populate(
-  //     "members.userId",
-  //     "name"
-  //   );
+  getChatMembers: async (req, res) => {
+    const { workspaceAccount } = req.params;
 
-  //   if (!chat)
-  //     return res.stats(404).json({
-  //       success: false,
-  //       message: "討論區不存在",
-  //     });
+    const workspace = await Workspace.findOne({
+      account: workspaceAccount,
+    });
+    if (!workspace)
+      return res.status(404).json({
+        success: false,
+        message: "工作區不存在",
+      });
 
-  //   const members = chat.members.map((member) => ({
-  //     id: member.userId._id,
-  //     name: member.userId.name,
-  //   }));
+    const workspaceId = workspace._id;
+    const chat = await Chat.findOne({ workspaceId }).populate(
+      "members.userId",
+      "name bgColor textColor"
+    );
 
-  //   return res.status(200).json({
-  //     success: true,
-  //     data: members,
-  //   });
-  // },
+    if (!chat)
+      return res.stats(404).json({
+        success: false,
+        message: "討論區不存在",
+      });
+
+    const members = chat.members.map((member) => ({
+      id: member.userId._id,
+      name: member.userId.name,
+      // letter: member.userId.name[0],
+      bgColor: member.userId.bgColor,
+      textColor: member.userId.textColor,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: members,
+    });
+  },
   createMessages: async (req, res) => {
     try {
-      const { workspaceId } = req.params;
+      const { workspaceAccount } = req.params;
       const { chatId, senderId, text } = req.body;
+
+      const workspace = await Workspace.findOne({
+        account: workspaceAccount,
+      });
+      if (!workspace)
+        return res.status(404).json({
+          success: false,
+          message: "工作區不存在",
+        });
+
+      const workspaceId = workspace._id;
 
       const chat = await Chat.findById(chatId);
 
@@ -79,16 +169,39 @@ const chatControllers = {
           message: "請確認text字數需低於1024",
         });
 
-      const data = await Message.create({
+      const new_msg = await Message.create({
         senderId,
         workspaceId,
         chatId,
         text,
       });
 
+      const populated_msg = await Message.findById(new_msg._id)
+        .populate({
+          path: "senderId",
+          model: "User",
+          select: "_id name bgColor textColor",
+        })
+        .lean();
+
+      const formatted_message = {
+        ...populated_msg,
+        senderId: populated_msg.senderId._id,
+        name: populated_msg.senderId.name,
+        bgColor: populated_msg.senderId.bgColor,
+        textColor: populated_msg.senderId.textColor,
+      };
+
+      chat.lastMessage = new_msg._id;
+      const updated_chat = await chat.save();
+      const populated_chat = await updated_chat.populate("lastMessage");
+
       return res.status(201).json({
         success: true,
-        data,
+        data: {
+          chat: populated_chat,
+          message: formatted_message,
+        },
       });
     } catch (error) {
       console.log(error);

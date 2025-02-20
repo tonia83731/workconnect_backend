@@ -28,18 +28,17 @@ router.get(
   "/:workspaceAccount/checked-worksapce-auth",
   workspaceControllers.checkedWorkspaceAuthentication
 );
+router.get(
+  "/:workspaceAccount/workspace-info",
+  workspaceControllers.getWorkspaceInfo
+);
 // V
 router.put(
-  "/:workspaceId/update-workspace",
-  workspaceAuthenticated,
+  "/:workspaceAccount/update-workspace",
   workspaceControllers.updatedWorkspace
 );
 // V
-// router.get(
-//   "/:workspaceId/members",
-//   workspaceAuthenticated,
-//   workspaceControllers.getWorkspaceMemberlists
-// );
+
 // V
 router.get(
   "/:workspaceAccount/members",

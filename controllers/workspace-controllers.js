@@ -1,4 +1,6 @@
 const Workspace = require("../models/workspace-models");
+const Workbucket = require("../models/workbucket-models");
+const Workfolder = require("../models/workfolder-models");
 const User = require("../models/user-models");
 const Chat = require("../models/chat-models");
 const { default: mongoose } = require("mongoose");
@@ -57,12 +59,53 @@ const workspaceControllers = {
       message: "已成功移除使用者",
     });
   },
+  getWorkspaceInfo: async (req, res) => {
+    try {
+      const { workspaceAccount } = req.params;
+      const workspace = await Workspace.findOne({
+        account: workspaceAccount,
+      });
+      if (!workspace)
+        return res.status(404).json({
+          success: false,
+          message: "工作區不存在",
+        });
+
+      const [workbucketCount, workfolderCount] = await Promise.all([
+        Workbucket.countDocuments({ workspaceId: workspace._id }),
+        Workfolder.countDocuments({ workspaceId: workspace._id }),
+      ]);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          title: workspace.title,
+          account: workspace.account,
+          memberCount: workspace.members.length,
+          inviteCount: workspace.invites.length,
+          workbucketCount,
+          workfolderCount,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
   updatedWorkspace: async (req, res) => {
     try {
-      const { workspaceId } = req.params;
+      const { workspaceAccount } = req.params;
+      const workspace = await Workspace.findOne({
+        account: workspaceAccount,
+      });
+
       const { _id } = req.user;
       const { title } = req.body;
-      const workspace = await Workspace.findById(workspaceId);
+
+      if (!workspace)
+        return res.status(404).json({
+          success: false,
+          message: "工作區不存在",
+        });
 
       const userAdmin = workspace.members.some(
         (member) =>

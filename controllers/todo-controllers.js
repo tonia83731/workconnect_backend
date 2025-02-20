@@ -94,13 +94,13 @@ const todoControllers = {
       } = req.body;
 
       const todo = await Todo.findById(todoId);
-
       if (!todo)
         return res.status(404).json({
           success: false,
           message: "代辦事項不存在",
         });
 
+      // Update fields
       todo.title = title || todo.title;
       todo.status = status || todo.status;
       todo.note = note || todo.note;
@@ -116,26 +116,27 @@ const todoControllers = {
       }).sort({ order: 1 });
 
       if (isNewFolder) {
-        const newFolderTodos = await Todo.find({
-          workfolderId,
-        }).sort({ order: 1 });
+        const newFolderTodos = await Todo.find({ workfolderId }).sort({
+          order: 1,
+        });
 
+        // Reorder current folder todos
         const updatedCurrFolderTodos = currFolderTodos
           .filter((f) => f._id.toString() !== todoId)
-          .map((f, index) => ({ ...f.toObject(), order, index }));
+          .map((f, index) => ({ ...f.toObject(), order: index }));
 
         const currFolderOps = updatedCurrFolderTodos.map((f) => ({
           updateOne: {
             filter: { _id: f._id },
-            update: { order: f.order },
+            update: { $set: { order: f.order } },
           },
         }));
 
         await Todo.bulkWrite(currFolderOps);
 
+        // Move todo to new folder
         todo.workfolderId = workfolderId;
         todo.order = newFolderTodos.length;
-
         const updated_todo = await todo.save();
 
         return res.status(200).json({
@@ -144,14 +145,19 @@ const todoControllers = {
         });
       }
 
+      // Save changes if todo stays in the same folder
       const updated_todo = await todo.save();
-
       return res.status(200).json({
         success: true,
         data: updated_todo,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: "伺服器錯誤",
+        error: error.message,
+      });
     }
   },
   updatedTodoPosition: async (req, res) => {
@@ -264,16 +270,16 @@ const todoControllers = {
         workfolderId,
       });
 
-      if (title.length < 3 || title.length > 20)
+      if (title.length < 3 || title.length > 50)
         return res.status(400).json({
           success: false,
-          message: "Title需介於3-20字之間",
+          message: "Title需介於3-50字之間",
         });
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const timestamp = today.getTime();
-      if (deadline < timestamp) {
+      if (deadline && deadline < timestamp) {
         return res.status(400).json({
           success: false,
           message: "Deadline不能小於今日",

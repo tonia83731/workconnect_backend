@@ -3,23 +3,9 @@ const router = express.Router();
 const { workspaceAuthenticated } = require("../../middleware/api-auth");
 const chatControllers = require("../../controllers/chat-controllers");
 
-// V
-router.get(
-  "/:workspaceId/messages",
-  workspaceAuthenticated,
-  chatControllers.getChatWithMessage
-);
-// V
-// router.get(
-//   "/:workspaceId/members",
-//   workspaceAuthenticated,
-//   chatControllers.getChatMembers
-// );
-// V
-router.post(
-  "/:workspaceId/send-message",
-  workspaceAuthenticated,
-  chatControllers.createMessages
-);
+router.get("/:workspaceAccount/chat", chatControllers.getChat);
+router.get("/:workspaceAccount/messages", chatControllers.getChatWithMessage);
+router.get("/:workspaceAccount/members", chatControllers.getChatMembers);
+router.post("/:workspaceAccount/send-message", chatControllers.createMessages);
 
 module.exports = router;

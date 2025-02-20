@@ -8,6 +8,9 @@ const cors = require("cors");
 const passport = require("./config/passport");
 const routes = require("./routes");
 
+const http = require("http");
+const socket = require("./socket");
+
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -28,10 +31,12 @@ app.use((req, res, next) => {
   next();
 });
 app.use(passport.initialize());
-// app.use(passport.session());
-
 app.use("/api", routes);
-app.listen(port, () => {
+
+const server = http.createServer(app);
+socket(server);
+
+server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
