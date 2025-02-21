@@ -126,94 +126,99 @@ const todoControllers = {
   updatedTodoPosition: async (req, res) => {
     try {
       const { todoId } = req.params;
-      const { workfolderId, updatedOrder } = req.body;
+
+      const { folderId, newOrder, oldOrder } = req.body; // target folderId and target Order
 
       const todo = await Todo.findById(todoId);
 
       if (!todo)
         return res.status(404).json({
           success: false,
-          message: "代辦事項不存在",
+          message: "Todo no found",
         });
+      const workfolderId = todo.workfolderId;
 
-      const isNewFolder =
-        workfolderId && workfolderId !== todo.workfolderId.toString();
-
-      const currFolderTodos = await Todo.find({
-        workfolderId: todo.workfolderId,
-      }).sort({ order: 1 });
-
-      // 若todo未改變folder
-      if (!isNewFolder) {
-        // 其他未移動的todos
-        const remainingTodos = currFolderTodos.filter(
-          (todo) => todo._id !== todoId
-        );
-
-        // 更新todos順序
-        const updatedTodos = [
-          ...remainingTodos.slice(0, updatedOrder),
-          todo,
-          ...remainingTodos.slice(updatedOrder),
-        ];
-        updatedTodos.forEach((todo, index) => {
-          todo.order = index;
-        });
-
-        // 更新Todo資料庫
-        const bulkOps = updatedTodos.map((todo) => ({
-          updateOne: {
-            filter: { _id: todo._id },
-            update: { order: todo.order },
-          },
-        }));
-
-        await Todo.bulkWrite(bulkOps);
-      } else {
-        // todo新folder位置的所有todos
-        const newFolderTodos = await Todo.find({
+      // Option1 ---> same folder, folderId: null
+      if (!folderId) {
+        const todos = await Todo.find({
           workfolderId,
         }).sort({ order: 1 });
 
-        // 更新原todo的folder --> 未移動的todos位置更新
-        const updatedCurrFolderTodos = currFolderTodos
-          .filter((currTodo) => currTodo._id.toString() !== todoId)
-          .map((currTodo, index) => ({ ...currTodo.toObject(), order, index }));
-        const currFolderOps = updatedCurrFolderTodos.map((currTodo) => ({
+        // Remove the todo and insert it at the new position
+        todos.splice(newOrder, 0, todos.splice(oldOrder, 1)[0]);
+
+        // Create bulk update operations to minimize DB calls
+        const bulkOps = todos.map((t, index) => ({
           updateOne: {
-            filter: { _id: currTodo._id },
-            update: { order: currTodo.order },
+            filter: { _id: t._id },
+            update: { $set: { order: index } },
           },
         }));
 
-        // 更新目前todo的workfolderId和order
-        todo.workfolderId = workfolderId;
-        todo.order = newFolderTodos.length;
+        if (bulkOps.length > 0) {
+          await Todo.bulkWrite(bulkOps);
+        }
 
-        // 重新更新新folder所有todos的order
-        const newUpdatedFolderTodos = [
-          ...newFolderTodos.slice(0, updatedOrder),
-          todo,
-          ...newFolderTodos.slice(updatedOrder),
-        ];
-        newUpdatedFolderTodos.forEach((todo, index) => {
-          todo.order = index;
+        return res.status(200).json({
+          success: true,
+          data: todos,
         });
+      } else {
+        // Option2 ---> different folder
+        // handle original folder
+        const originalTodos = await Todo.find({
+          workfolderId,
+        }).sort({ order: 1 });
 
-        const newFolderOps = newUpdatedFolderTodos.map((todo, index) => ({
+        originalTodos.splice(oldOrder, 1);
+
+        // handle target folder
+        const targetTodos = await Todo.find({
+          workfolderId: folderId,
+        }).sort({ order: 1 });
+
+        todo.workfolderId = folderId;
+        targetTodos.splice(newOrder, 0, todo);
+
+        // updated both original and target folder
+        const originalBulkOps = originalTodos.map((t, index) => ({
           updateOne: {
-            filter: { _id: todo._id },
-            update: { order: index },
+            filter: { _id: t._id },
+            update: {
+              $set: { order: index },
+            },
           },
         }));
 
-        await Todo.bulkWrite([...currFolderOps, ...newFolderOps]);
-      }
+        const targetBulkOps = targetTodos.map((t, index) => ({
+          updateOne: {
+            filter: { _id: t._id },
+            update: {
+              $set: { order: index },
+            },
+          },
+        }));
 
-      return res.status(200).json({
-        success: true,
-        message: "代辦事項順序更新成功",
-      });
+        await Promise.all([
+          originalBulkOps.length > 0
+            ? Todo.bulkWrite(originalBulkOps)
+            : Promise.resolve(),
+          targetBulkOps.length > 0
+            ? Todo.bulkWrite(targetBulkOps)
+            : Promise.resolve(),
+        ]);
+
+        await todo.save();
+
+        // return both original and target folder
+        return res.status(200).json({
+          success: true,
+          data: {
+            originalTodos,
+            targetTodos,
+          },
+        });
+      }
     } catch (error) {
       console.log(error);
     }
