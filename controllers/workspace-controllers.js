@@ -143,7 +143,7 @@ const workspaceControllers = {
         account: workspaceAccount,
       }).populate({
         path: "members.userId",
-        select: "name email",
+        select: "name email bgColor textColor",
       });
 
       if (!workspace)
@@ -157,6 +157,8 @@ const workspaceControllers = {
         _id: user.userId._id,
         name: user.userId.name,
         email: user.userId.email,
+        bgColor: user.userId.bgColor,
+        textColor: user.userId.textColor,
         isAdmin: user.isAdmin,
       }));
 

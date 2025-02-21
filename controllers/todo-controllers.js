@@ -46,7 +46,7 @@ const todoControllers = {
       })
         .populate({
           path: "assignments.userId",
-          select: "name",
+          select: "name bgColor textColor",
         })
         .sort({ order: -1 });
 
@@ -84,7 +84,7 @@ const todoControllers = {
     try {
       const { todoId } = req.params;
       const {
-        workfolderId,
+        // workfolderId,
         title,
         status,
         note,
@@ -108,48 +108,11 @@ const todoControllers = {
       todo.checklists = checklists || todo.checklists;
       todo.assignments = assignments || todo.assignments;
 
-      const isNewFolder =
-        workfolderId && workfolderId !== todo.workfolderId.toString();
+      const data = await todo.save();
 
-      const currFolderTodos = await Todo.find({
-        workfolderId: todo.workfolderId,
-      }).sort({ order: 1 });
-
-      if (isNewFolder) {
-        const newFolderTodos = await Todo.find({ workfolderId }).sort({
-          order: 1,
-        });
-
-        // Reorder current folder todos
-        const updatedCurrFolderTodos = currFolderTodos
-          .filter((f) => f._id.toString() !== todoId)
-          .map((f, index) => ({ ...f.toObject(), order: index }));
-
-        const currFolderOps = updatedCurrFolderTodos.map((f) => ({
-          updateOne: {
-            filter: { _id: f._id },
-            update: { $set: { order: f.order } },
-          },
-        }));
-
-        await Todo.bulkWrite(currFolderOps);
-
-        // Move todo to new folder
-        todo.workfolderId = workfolderId;
-        todo.order = newFolderTodos.length;
-        const updated_todo = await todo.save();
-
-        return res.status(200).json({
-          success: true,
-          data: updated_todo,
-        });
-      }
-
-      // Save changes if todo stays in the same folder
-      const updated_todo = await todo.save();
       return res.status(200).json({
         success: true,
-        data: updated_todo,
+        data,
       });
     } catch (error) {
       console.error(error);
