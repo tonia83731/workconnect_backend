@@ -18,15 +18,11 @@ const socket = (server) => {
       onlineUsers.set(userId, socket.id);
       console.log(`User ${userId}: ${name} joined chat ${chatId}`);
 
-      io.emit("updated_online_users", Array.from(onlineUsers.keys()));
-    });
+      // console.log(Array.from(onlineUsers.keys()));
 
-    socket.on("send_message", ({ chatId, userId, name, text }) => {
-      io.to(chatId).emit("receive_message", {
-        chatId,
-        userId,
-        name,
-        text,
+      io.emit("updated_online_users", Array.from(onlineUsers.keys()));
+      socket.on("send_message", (message) => {
+        io.to(chatId).emit("receive_message", message);
       });
     });
 
