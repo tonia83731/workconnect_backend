@@ -123,11 +123,49 @@ const todoControllers = {
       });
     }
   },
-  updatedTodoPosition: async (req, res) => {
+  updatedTodoVerticalPosition: async (req, res) => {
+    try {
+      const { workfolderId, todoId } = req.params;
+      const { oldOrder, newOrder } = req.body;
+
+      const todos = await Todo.find({
+        workfolderId,
+      }).sort({ order: 1 });
+
+      const todo = await Todo.findById(todoId);
+
+      if (!todo) {
+        return res.status(404).json({
+          succes: false,
+          message: "Todo no found",
+        });
+      }
+
+      const [movingTodo] = todos.splice(oldOrder, 1);
+      todos.splice(newOrder, 0, movingTodo);
+
+      await Promise.all(
+        todos.map(async (t, index) => {
+          t.order = index;
+          await t.save();
+        })
+      );
+
+      // console.log(todos);
+
+      return res.status(200).json({
+        success: true,
+        data: todos,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  updatedTodoHorizonalPosition: async (req, res) => {
     try {
       const { todoId } = req.params;
 
-      const { folderId, newOrder, oldOrder } = req.body; // target folderId and target Order
+      const { oldFolderId, newFolderId, newOrder, oldOrder } = req.body; // target folderId and target Order
 
       const todo = await Todo.findById(todoId);
 
@@ -136,89 +174,48 @@ const todoControllers = {
           success: false,
           message: "Todo no found",
         });
-      const workfolderId = todo.workfolderId;
 
-      // Option1 ---> same folder, folderId: null
-      if (!folderId) {
-        const todos = await Todo.find({
-          workfolderId,
-        }).sort({ order: 1 });
-
-        // Remove the todo and insert it at the new position
-        todos.splice(newOrder, 0, todos.splice(oldOrder, 1)[0]);
-
-        // Create bulk update operations to minimize DB calls
-        const bulkOps = todos.map((t, index) => ({
-          updateOne: {
-            filter: { _id: t._id },
-            update: { $set: { order: index } },
-          },
-        }));
-
-        if (bulkOps.length > 0) {
-          await Todo.bulkWrite(bulkOps);
+      const originalTodos = await Todo.find({ workfolderId: oldFolderId }).sort(
+        {
+          order: 1,
         }
+      );
 
-        return res.status(200).json({
-          success: true,
-          data: todos,
-        });
-      } else {
-        // Option2 ---> different folder
-        // handle original folder
-        const originalTodos = await Todo.find({
-          workfolderId,
-        }).sort({ order: 1 });
+      const [movedTodo] = originalTodos.splice(oldOrder, 1);
+      movedTodo.workfolderId = newFolderId;
+      await movedTodo.save();
 
-        originalTodos.splice(oldOrder, 1);
+      const targetTodos = await Todo.find({ workfolderId: newFolderId }).sort({
+        order: 1,
+      });
+      targetTodos.splice(newOrder, 0, movedTodo);
 
-        // handle target folder
-        const targetTodos = await Todo.find({
-          workfolderId: folderId,
-        }).sort({ order: 1 });
+      const originalBulkOps = originalTodos.map((t, index) => ({
+        updateOne: {
+          filter: { _id: t._id },
+          update: { $set: { order: index } },
+        },
+      }));
 
-        todo.workfolderId = folderId;
-        targetTodos.splice(newOrder, 0, todo);
+      const targetBulkOps = targetTodos.map((t, index) => ({
+        updateOne: {
+          filter: { _id: t._id },
+          update: { $set: { order: index } },
+        },
+      }));
 
-        // updated both original and target folder
-        const originalBulkOps = originalTodos.map((t, index) => ({
-          updateOne: {
-            filter: { _id: t._id },
-            update: {
-              $set: { order: index },
-            },
-          },
-        }));
+      await Promise.all([
+        originalBulkOps.length ? Todo.bulkWrite(originalBulkOps) : null,
+        targetBulkOps.length ? Todo.bulkWrite(targetBulkOps) : null,
+      ]);
 
-        const targetBulkOps = targetTodos.map((t, index) => ({
-          updateOne: {
-            filter: { _id: t._id },
-            update: {
-              $set: { order: index },
-            },
-          },
-        }));
-
-        await Promise.all([
-          originalBulkOps.length > 0
-            ? Todo.bulkWrite(originalBulkOps)
-            : Promise.resolve(),
-          targetBulkOps.length > 0
-            ? Todo.bulkWrite(targetBulkOps)
-            : Promise.resolve(),
-        ]);
-
-        await todo.save();
-
-        // return both original and target folder
-        return res.status(200).json({
-          success: true,
-          data: {
-            originalTodos,
-            targetTodos,
-          },
-        });
-      }
+      return res.status(200).json({
+        success: true,
+        data: {
+          originalTodos,
+          targetTodos,
+        },
+      });
     } catch (error) {
       console.log(error);
     }

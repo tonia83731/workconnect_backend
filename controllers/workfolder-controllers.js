@@ -42,13 +42,13 @@ const workfolderControllers = {
         folders.map(async (folder) => {
           const todos = await Todo.find({ workfolderId: folder._id })
             .select(
-              "title workfolderId note status deadline checklists assignments order"
+              "_id title workfolderId note status deadline checklists assignments order"
             )
             .populate({
               path: "assignments.userId",
               select: "name bgColor textColor",
             })
-            .sort({ order: -1 })
+            .sort({ order: 1 })
             .exec();
 
           return {

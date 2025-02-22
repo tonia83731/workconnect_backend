@@ -4,11 +4,13 @@ const { workspaceAuthenticated } = require("../../middleware/api-auth");
 const todoControllers = require("../../controllers/todo-controllers");
 
 router.delete("/:workfolderId/:todoId/delete-todo", todoControllers.deleteTodo);
-// NON
 router.put(
-  "/:workspaceId/:todoId/positions",
-  workspaceAuthenticated,
-  todoControllers.updatedTodoPosition
+  "/:workfolderId/:todoId/updated-vertical-position",
+  todoControllers.updatedTodoVerticalPosition
+);
+router.put(
+  "/:todoId/updated-horizonal-position",
+  todoControllers.updatedTodoHorizonalPosition
 );
 router.get("/:workfolderId/bucket-todos", todoControllers.getTodos);
 router.get("/:todoId/todo-item", todoControllers.getTodo);
