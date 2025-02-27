@@ -13,7 +13,10 @@ router.delete("/:workfolderId/:todoId/delete-todo", todoControllers.deleteTodo);
 //   todoControllers.updatedTodoHorizonalPosition
 // );
 
-router.put("/:todoId/updated-position", todoControllers.updatedTodoPosition);
+router.put(
+  "/:sourceFolderId/:targetFolderId/:todoId/updated-position",
+  todoControllers.updatedTodoPosition
+);
 router.get("/:workfolderId/folder-todos", todoControllers.getTodos);
 router.get("/:todoId/todo-item", todoControllers.getTodo);
 router.post("/:workfolderId/create-todo", todoControllers.createTodo);

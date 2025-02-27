@@ -125,7 +125,7 @@ const todoControllers = {
   },
   updatedTodoPosition: async (req, res) => {
     try {
-      const { workfolderId } = req.params;
+      const { sourceFolderId, targetFolderId, todoId } = req.params;
       const { todos } = req.body; // [{_id: todo._id, order: todo.order}]
 
       if (!Array.isArray(todos) || todos.length === 0)
@@ -134,17 +134,28 @@ const todoControllers = {
           message: "Invalid todos data.",
         });
 
-      const updated_promises = todos.map(({ _id, order }) => {
-        return Todo.updateOne(
-          {
-            _id,
-            workfolderId,
-          },
-          { $set: { order } }
-        );
-      });
+      const isSameFolder = sourceFolderId === targetFolderId;
 
-      await Promise.all(updated_promises);
+      const todo = await Todo.findById(todoId);
+      if (!todo)
+        return res.status(404).json({
+          success: false,
+          message: "Todo no found",
+        });
+
+      if (!isSameFolder) {
+        todo.workfolderId = targetFolderId;
+        await todo.save();
+      }
+
+      const bulkOperations = todos.map(({ _id, order }) => ({
+        updateOne: {
+          filter: { _id },
+          update: { $set: { order } },
+        },
+      }));
+
+      await Todo.bulkWrite(bulkOperations);
 
       return res.status(200).json({
         success: true,
@@ -154,145 +165,7 @@ const todoControllers = {
       console.log(error);
     }
   },
-  // updatedTodoPosition: async (req, res) => {
-  //   try {
-  //     const { workfolderId } = req.params;
-  //     const { todoId, todoIds } = req.body; // todos ==> _id array
 
-  //     if (todoId) {
-  //       const todo = await Todo.findByIdAndUpdate(todoId);
-  //       if (!todo)
-  //         return res.status(404).json({
-  //           success: false,
-  //           message: "Todo no found",
-  //         });
-  //       todo.workfolderId = workfolderId;
-  //       await todo.save();
-  //     }
-
-  //     const folder = await Workfolder.findOne({ _id: workfolderId });
-  //     if (!folder) {
-  //       return res.status(404).json({
-  //         success: false,
-  //         message: "Folder no found",
-  //       });
-  //     }
-
-  //     const updated_promises = todoIds.map((todoId, index) => {
-  //       return Todo.updateOne(
-  //         { _id: todoId, workfolderId },
-  //         { $set: { order: index } }
-  //       );
-  //     });
-
-  //     await Promise.all(updated_promises);
-  //     const updatedTodos = await Todo.find({ workfolderId }).sort({ order: 1 });
-
-  //     return res.status(200).json({
-  //       success: true,
-  //       data: updatedTodos,
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // },
-  // updatedTodoVerticalPosition: async (req, res) => {
-  //   try {
-  //     const { workfolderId, todoId } = req.params;
-  //     const { oldOrder, newOrder } = req.body;
-
-  //     const todos = await Todo.find({
-  //       workfolderId,
-  //     }).sort({ order: 1 });
-
-  //     const todo = await Todo.findById(todoId);
-
-  //     if (!todo) {
-  //       return res.status(404).json({
-  //         succes: false,
-  //         message: "Todo no found",
-  //       });
-  //     }
-
-  //     const [movingTodo] = todos.splice(oldOrder, 1);
-  //     todos.splice(newOrder, 0, movingTodo);
-
-  //     await Promise.all(
-  //       todos.map(async (t, index) => {
-  //         t.order = index;
-  //         await t.save();
-  //       })
-  //     );
-
-  //     // console.log(todos);
-
-  //     return res.status(200).json({
-  //       success: true,
-  //       data: todos,
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // },
-  // updatedTodoHorizonalPosition: async (req, res) => {
-  //   try {
-  //     const { todoId } = req.params;
-
-  //     const { oldFolderId, newFolderId, newOrder, oldOrder } = req.body; // target folderId and target Order
-
-  //     const todo = await Todo.findById(todoId);
-
-  //     if (!todo)
-  //       return res.status(404).json({
-  //         success: false,
-  //         message: "Todo no found",
-  //       });
-
-  //     const originalTodos = await Todo.find({ workfolderId: oldFolderId }).sort(
-  //       {
-  //         order: 1,
-  //       }
-  //     );
-
-  //     const [movedTodo] = originalTodos.splice(oldOrder, 1);
-  //     movedTodo.workfolderId = newFolderId;
-  //     await movedTodo.save();
-
-  //     const targetTodos = await Todo.find({ workfolderId: newFolderId }).sort({
-  //       order: 1,
-  //     });
-  //     targetTodos.splice(newOrder, 0, movedTodo);
-
-  //     const originalBulkOps = originalTodos.map((t, index) => ({
-  //       updateOne: {
-  //         filter: { _id: t._id },
-  //         update: { $set: { order: index } },
-  //       },
-  //     }));
-
-  //     const targetBulkOps = targetTodos.map((t, index) => ({
-  //       updateOne: {
-  //         filter: { _id: t._id },
-  //         update: { $set: { order: index } },
-  //       },
-  //     }));
-
-  //     await Promise.all([
-  //       originalBulkOps.length ? Todo.bulkWrite(originalBulkOps) : null,
-  //       targetBulkOps.length ? Todo.bulkWrite(targetBulkOps) : null,
-  //     ]);
-
-  //     return res.status(200).json({
-  //       success: true,
-  //       data: {
-  //         originalTodos,
-  //         targetTodos,
-  //       },
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // },
   createTodo: async (req, res) => {
     try {
       const { workfolderId } = req.params;
