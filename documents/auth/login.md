@@ -21,11 +21,11 @@
   "success": true,
   "data": {
     "user": {
-      "id": "",
-      "name": "",
-      "email": ""
+      "id": "67b2b7acbecce9a8e1f5f75e",
+      "name": "Test",
+      "email": "test@example.com"
     },
-    "token": ""
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YjJiN2FjYmVjY2U5YThlMWY1Zjc1ZSIsIm5hbWUiOiJUZXN0IiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNzQxMjI3NTg1LCJleHAiOjE3NDE4MzIzODV9.UlgD2ucFABqOZPLDvVvftSYNYV_RirVgkJxXEVrNI20"
   }
 }
 ```

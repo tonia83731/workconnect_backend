@@ -20,11 +20,11 @@
   "popup": true,
   "data": [
     {
-      "id": "",
-      "account": "",
-      "title": "",
-      "members_count": 0,
-      "invites_count": 0
+      "id": "67b2d4bba2c47b1835fd6d70",
+      "account": "@testspace",
+      "title": "測試用工作區",
+      "members_count": 4,
+      "invites_count": 1
     },
     ...
   ]

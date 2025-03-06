@@ -18,7 +18,7 @@ const mongoose_url = process.env.MONGODB_URL;
 
 const allowedOrigins = [
   "http://localhost:3035", // Development
-  // "https://customform-frontend.vercel.app", // Production
+  "https://workconnect-frontend.vercel.app", // Production
 ];
 
 const corsOptions = {
