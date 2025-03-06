@@ -131,7 +131,7 @@ const todoControllers = {
       if (!Array.isArray(todos) || todos.length === 0)
         return res.status(400).json({
           success: false,
-          message: "Invalid todos data.",
+          message: "todos 格式錯誤，需使用Array; 須包含 todoId, order",
         });
 
       const isSameFolder = sourceFolderId === targetFolderId;
@@ -140,7 +140,7 @@ const todoControllers = {
       if (!todo)
         return res.status(404).json({
           success: false,
-          message: "Todo no found",
+          message: "Todo不存在",
         });
 
       if (!isSameFolder) {
@@ -159,7 +159,7 @@ const todoControllers = {
 
       return res.status(200).json({
         success: true,
-        message: "Todo order updated!",
+        message: "Todo順序已更新",
       });
     } catch (error) {
       console.log(error);

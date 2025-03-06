@@ -11,7 +11,7 @@ router.post(
 
 router.put(
   "/:workspaceId/:folderId/update-folder",
-  workspaceAuthenticated,
+  // workspaceAuthenticated,
   workfolderControllers.updatedWorkfolder
 );
 router.get("/:workbucketId/folders", workfolderControllers.getWorkfolders);

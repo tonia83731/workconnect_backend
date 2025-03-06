@@ -4,14 +4,6 @@ const { workspaceAuthenticated } = require("../../middleware/api-auth");
 const todoControllers = require("../../controllers/todo-controllers");
 
 router.delete("/:workfolderId/:todoId/delete-todo", todoControllers.deleteTodo);
-// router.put(
-//   "/:workfolderId/:todoId/updated-vertical-position",
-//   todoControllers.updatedTodoVerticalPosition
-// );
-// router.put(
-//   "/:todoId/updated-horizonal-position",
-//   todoControllers.updatedTodoHorizonalPosition
-// );
 
 router.put(
   "/:sourceFolderId/:targetFolderId/:todoId/updated-position",

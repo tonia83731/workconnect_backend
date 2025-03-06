@@ -49,12 +49,12 @@ const userControllers = {
         textColor: getRandomColor(),
       });
 
-      const mail_text = `Thank you for registering with Workconnect! We are excited to have you on board.\nYour registration has been successfully completed. You can now access all of our services and start exploring opportunities with us.`;
+      const mail_text = `感謝您註冊 Workconnect！ 我們很高興能夠迎接您的加入。 您的註冊已成功完成，現在您可以使用我們的所有服務，並開始探索各種機會。`;
 
       nodeMailer(
         name,
         email,
-        "Welcome to Workconnect - Your Registration is Successful",
+        "歡迎來到 Workconnect - 您的註冊已成功完成",
         mail_text
       );
 
