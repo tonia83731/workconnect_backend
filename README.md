@@ -41,7 +41,7 @@
 ## 專案設定
 
 ```sh
-git clone [https://github.com/tonia83731/workconnect_backend.git](https://github.com/tonia83731/workconnect_backend.git)
+git clone https://github.com/tonia83731/workconnect_backend.git
 ```
 
 ```sh
