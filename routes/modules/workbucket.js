@@ -2,10 +2,7 @@ const express = require("express");
 const router = express.Router();
 const workbucketControllers = require("../../controllers/workbucket-controllers");
 
-router.get(
-  "/:workspaceId/:bucketId/bucket-title",
-  workbucketControllers.getWorkspaceBucket
-);
+router.get("/:bucketId/bucket-title", workbucketControllers.getWorkspaceBucket);
 
 router.put(
   "/:bucketId/update-bucket-pinned",
