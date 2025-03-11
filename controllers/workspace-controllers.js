@@ -211,7 +211,7 @@ const workspaceControllers = {
 
       const mail_text = `You’ve been invited to join ${workspace.title}! Collaborate with your team, access shared resources, and stay organized—all in one place.
       \n\nClick the button below to confirm your invitation and get started:
-      \n\nJoin Workspace: https://workconnect-frontend.vercel.app
+      \n\nJoin Workspace: https://workconnect-frontend-omega.vercel.app/
       \n\nIf you didn’t expect this invitation, you can safely ignore this email.
       \n\nLooking forward to having you on board!`;
 
