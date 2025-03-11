@@ -10,9 +10,9 @@
 
 ## 相關連結
 
-- 參考 API 文件，請參考[workconnect_backend_docs](https://github.com/tonia83731/workconnect_backend_docs)
+- 參考 API 文件，請參考 [workconnect_backend_docs](https://github.com/tonia83731/workconnect_backend_docs)
 
-- 前端開發部署，請參考[workconnect_frontend](https://github.com/tonia83731/workconnect_frontend)
+- 前端開發部署，請參考 [workconnect_frontend](https://github.com/tonia83731/workconnect_frontend)
 
 ## 專案挑戰與解決
 
