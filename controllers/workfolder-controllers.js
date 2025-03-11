@@ -183,7 +183,6 @@ const workfolderControllers = {
     }
   },
 
-  // add order
   deleteWorkfolder: async (req, res) => {
     try {
       const { folderId } = req.params;
@@ -196,7 +195,6 @@ const workfolderControllers = {
         });
 
       const workfolders = await Workfolder.find({
-        // workspaceId,
         workbucketId: folder.workbucketId,
       }).sort({ order: 1 });
 
@@ -226,8 +224,6 @@ const workfolderControllers = {
   createdWorkfolder: async (req, res) => {
     try {
       const { workspaceAccount, workbucketId } = req.params;
-      // const { title } = req.body;
-
       const workspace = await Workspace.findOne({
         account: workspaceAccount,
       });

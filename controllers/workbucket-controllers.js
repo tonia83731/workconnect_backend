@@ -22,32 +22,6 @@ const workbucketControllers = {
       console.log(error);
     }
   },
-  unpinnedBucket: async (req, res) => {
-    try {
-      const { bucketId } = req.params;
-
-      const bucket = await Workbucket.findById(bucketId);
-      if (!bucket)
-        return res.status(404).json({
-          success: false,
-          message: "工作Bucket不存在",
-        });
-      if (!bucket.isPinned)
-        return res.status(200).json({
-          success: false,
-          message: "工作Bucket已取消釘選",
-        });
-      bucket.isPinned = false;
-
-      const data = await bucket.save();
-      return res.status(200).json({
-        success: true,
-        data,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  },
   updatedWorkspaceBucket: async (req, res) => {
     try {
       const { bucketId } = req.params;
@@ -99,7 +73,6 @@ const workbucketControllers = {
       console.log(error);
     }
   },
-  // V
   getWorkspaceBuckets: async (req, res) => {
     try {
       const { workspaceAccount } = req.params;
@@ -114,8 +87,6 @@ const workbucketControllers = {
           isPinned: -1,
         })
         .exec();
-
-      // console.log(workbuckets);
 
       return res.status(200).json({
         success: true,
@@ -144,7 +115,6 @@ const workbucketControllers = {
       console.log(error);
     }
   },
-  // V
   createdWorkspaceBucket: async (req, res) => {
     try {
       const { workspaceAccount } = req.params;

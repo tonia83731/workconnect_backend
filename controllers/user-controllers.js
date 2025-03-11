@@ -168,12 +168,6 @@ const userControllers = {
           message: "Email格式錯誤",
         });
 
-      // if (password && password.length < 4)
-      //   return res.status(400).json({
-      //     success: false,
-      //     message: "Password需大於4碼",
-      //   });
-
       const isEmailExisted = await User.findOne({ email });
       if (user.email !== email && isEmailExisted)
         return res.status(400).json({
@@ -181,13 +175,10 @@ const userControllers = {
           message: "Email已經註冊，請選擇不同的email",
         });
 
-      // console.log(name, email, password);
-
       user.name = name || user.name;
       user.email = email || user.email;
       user.bgColor = bgColor || user.bgColor;
       user.textColor = textColor || user.textColor;
-      // user.password = password || user.password;
 
       const data = await user.save();
 

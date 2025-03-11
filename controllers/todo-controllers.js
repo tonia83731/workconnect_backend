@@ -1,4 +1,3 @@
-const Workfolder = require("../models/workfolder-models");
 const Todo = require("../models/todo-models");
 
 const todoControllers = {
@@ -83,15 +82,8 @@ const todoControllers = {
   editTodo: async (req, res) => {
     try {
       const { todoId } = req.params;
-      const {
-        // workfolderId,
-        title,
-        status,
-        note,
-        deadline,
-        checklists,
-        assignments,
-      } = req.body;
+      const { title, status, note, deadline, checklists, assignments } =
+        req.body;
 
       const todo = await Todo.findById(todoId);
       if (!todo)

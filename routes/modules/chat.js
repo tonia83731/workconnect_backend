@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const { workspaceAuthenticated } = require("../../middleware/api-auth");
 const chatControllers = require("../../controllers/chat-controllers");
 
 router.get("/:workspaceAccount/chat", chatControllers.getChat);

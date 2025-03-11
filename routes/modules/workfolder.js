@@ -1,17 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const { workspaceAuthenticated } = require("../../middleware/api-auth");
+
 const workfolderControllers = require("../../controllers/workfolder-controllers");
 
 router.post(
   "/:workspaceAccount/:workbucketId/create-folder",
-  // workspaceAuthenticated,
   workfolderControllers.createdWorkfolder
 );
 
 router.put(
   "/:workspaceId/:folderId/update-folder",
-  // workspaceAuthenticated,
   workfolderControllers.updatedWorkfolder
 );
 router.get("/:workbucketId/folders", workfolderControllers.getWorkfolders);

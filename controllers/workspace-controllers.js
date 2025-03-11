@@ -7,7 +7,6 @@ const { default: mongoose } = require("mongoose");
 const { nodeMailer } = require("../helpers/mail-helper");
 
 const workspaceControllers = {
-  // --V--
   removeWorkspaceMember: async (req, res) => {
     const { _id } = req.user;
     const { workspaceAccount, memberId } = req.params;
@@ -135,7 +134,6 @@ const workspaceControllers = {
       console.log(error);
     }
   },
-  // --V--
   getWorkspaceMemberlists: async (req, res) => {
     try {
       const { workspaceAccount } = req.params;
@@ -173,7 +171,6 @@ const workspaceControllers = {
       console.log(error);
     }
   },
-  // --V--
   invitedWorkspaceMember: async (req, res) => {
     try {
       const { workspaceAccount } = req.params;
@@ -214,7 +211,7 @@ const workspaceControllers = {
 
       const mail_text = `You’ve been invited to join ${workspace.title}! Collaborate with your team, access shared resources, and stay organized—all in one place.
       \n\nClick the button below to confirm your invitation and get started:
-      \n\nJoin Workspace: https://localhost:3035
+      \n\nJoin Workspace: https://workconnect-frontend.vercel.app
       \n\nIf you didn’t expect this invitation, you can safely ignore this email.
       \n\nLooking forward to having you on board!`;
 
@@ -225,7 +222,7 @@ const workspaceControllers = {
         mail_text
       );
 
-      return res.status(201).json({
+      return res.status(200).json({
         success: true,
         message: "已成功邀請成員",
       });
@@ -233,7 +230,6 @@ const workspaceControllers = {
       console.log(error);
     }
   },
-  // --V--
   canceledInvitedWorkspaceMember: async (req, res) => {
     try {
       const { workspaceAccount } = req.params;
@@ -261,7 +257,7 @@ const workspaceControllers = {
       workspace.invites = updated_invites;
       await workspace.save();
 
-      return res.status(201).json({
+      return res.status(200).json({
         success: true,
         message: "已取消邀請成員",
       });
@@ -269,7 +265,6 @@ const workspaceControllers = {
       console.log(error);
     }
   },
-  // --V--
   setWorkspaceMemberAsAdmin: async (req, res) => {
     try {
       const { workspaceAccount, memberId } = req.params;
@@ -323,7 +318,6 @@ const workspaceControllers = {
       console.log(error);
     }
   },
-  // --V--
   removeWorkspaceMemberAsAdmin: async (req, res) => {
     const { workspaceAccount, memberId } = req.params;
     const { _id } = req.user;

@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const { workspaceAuthenticated } = require("../../middleware/api-auth");
 const todoControllers = require("../../controllers/todo-controllers");
 
 router.delete("/:workfolderId/:todoId/delete-todo", todoControllers.deleteTodo);
