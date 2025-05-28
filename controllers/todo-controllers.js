@@ -1,4 +1,5 @@
 const Todo = require("../models/todo-models");
+const Workfolder = require("../models/workfolder-models");
 
 const todoControllers = {
   deleteTodo: async (req, res) => {
@@ -116,45 +117,94 @@ const todoControllers = {
     }
   },
   updatedTodoPosition: async (req, res) => {
+    const {folderId} = req.params
+    const {todos} = req.body // todoId: string[]
     try {
-      const { sourceFolderId, targetFolderId, todoId } = req.params;
-      const { todos } = req.body; // [{_id: todo._id, order: todo.order}]
-
-      if (!Array.isArray(todos) || todos.length === 0)
-        return res.status(400).json({
-          success: false,
-          message: "todos 格式錯誤，需使用Array; 須包含 todoId, order",
-        });
-
-      const isSameFolder = sourceFolderId === targetFolderId;
-
-      const todo = await Todo.findById(todoId);
-      if (!todo)
-        return res.status(404).json({
-          success: false,
-          message: "Todo不存在",
-        });
-
-      if (!isSameFolder) {
-        todo.workfolderId = targetFolderId;
-        await todo.save();
-      }
-
-      const bulkOperations = todos.map(({ _id, order }) => ({
+      const bulkOps = todos.map((id, index) => ({
         updateOne: {
-          filter: { _id },
-          update: { $set: { order } },
-        },
-      }));
+          filter: {
+            _id: id, workfolderId: folderId
+          },
+          update: {
+            $set: {
+              order: index
+            }
+          }
+        }
+      }))
 
-      await Todo.bulkWrite(bulkOperations);
-
-      return res.status(200).json({
+      await Todo.bulkWrite(bulkOps)
+      res.status(200).json({
         success: true,
-        message: "Todo順序已更新",
-      });
+        message: 'Todo positions updated successfully.'
+      })
     } catch (error) {
       console.log(error);
+    }
+  },
+  relocatedTodoPosition: async (req, res) => {
+    const { todoId } = req.params
+    const { fromFolderId, toFolderId, newIdx } = req.body
+    try {
+      const [sourceFolder, targetFolder] = await Promise.all([
+        Workfolder.findById(fromFolderId),
+        Workfolder.findById(toFolderId)
+      ])
+      // Find the todo in the source folder
+      // const sourceFolder = await Workfolder.findById(fromFolderId)
+      if (!sourceFolder) {
+        return res.status(404).json({ success: false, message: 'Source folder not found' })
+      }
+      // Find the target folder
+      // const targetFolder = await Workfolder.findById(toFolderId)
+      if (!targetFolder) {
+        return res.status(404).json({ success: false, message: 'Target folder not found' })
+      }
+
+      const [sourceFolderTodo, targetFolderTodo] = await Promise.all([
+        Todo.find({ workfolderId: fromFolderId }),
+        Todo.find({workfolderId: toFolderId}),
+      ])
+
+      const todo = sourceFolderTodo.find(t => t._id.toString() === todoId)
+
+      if (!todo) {
+        return res.status(404).json({ success: false, message: 'Todo not found in source folder' })
+      }
+
+      // remove todo from sourceFolder
+      const updatedSourceTodos = sourceFolderTodo.filter(t => t._id.toString() !== todoId);
+
+      // updated todo folder reference
+      todo.workfolderId = toFolderId
+      await todo.save()
+      targetFolderTodo.splice(newIdx, 0, todo)
+
+
+      const bulkOps = [
+        ...updatedSourceTodos.map((t, index) => ({
+            updateOne: {
+                filter: { _id: t._id, workfolderId: fromFolderId },
+                update: { $set: { order: index } }
+            }
+        })),
+        ...targetFolderTodo.map((t, index) => ({
+            updateOne: {
+                filter: { _id: t._id, workfolderId: toFolderId }, // Fixed workfolderId here
+                update: { $set: { order: index } }
+            }
+        }))
+    ];
+
+      await Todo.bulkWrite(bulkOps)
+
+      return res.json({
+        success: true,
+        message: 'Todo positions updated successfully.'
+      })
+    } catch(error) {
+      console.log(error)
+      return res.status(500).json({ success: false, message: 'Internal server error' })
     }
   },
 
