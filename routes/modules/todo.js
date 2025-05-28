@@ -3,12 +3,6 @@ const router = express.Router();
 const todoControllers = require("../../controllers/todo-controllers");
 
 router.delete("/:workfolderId/:todoId/delete-todo", todoControllers.deleteTodo);
-
-// router.put(
-//   "/:sourceFolderId/:targetFolderId/:todoId/updated-position",
-//   todoControllers.updatedTodoPosition
-// );
-
 router.patch(
   "/:folderId/updated-position",
   todoControllers.updatedTodoPosition
