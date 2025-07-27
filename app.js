@@ -19,6 +19,7 @@ const mongoose_url = process.env.MONGODB_URL;
 const allowedOrigins = [
   "http://localhost:3035", // Development
   "https://workconnect-frontend-omega.vercel.app", // Production
+  "https://workconnect-frontend-tonias-projects-f8fccc8f.vercel.app" // Production 2
 ];
 
 const corsOptions = {
